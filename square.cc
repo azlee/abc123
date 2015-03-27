@@ -10,6 +10,11 @@ Square::Square(int x, int y, int c, char t, char s):x(x),y(y),colour(c),type(t),
 int Square::getColour(){
 	return colour;
 }
+
+void Square::setColour(int colour) {
+	colour(colour);
+}
+
 char Square::getType(){
 	return type;
 }
