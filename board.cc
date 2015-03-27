@@ -740,7 +740,7 @@ void Board::checkL4() { // check first L shape
 						lateralR = i;
 					}
 				}
-				theBoard[i][j]->setType('b'); //set to unstable square
+				theBoard[i][j]->setType('b'); // set to unstable square
 				theBoard[i+1][j]->setType('-');
 				theBoard[i+2][j]->setType('-');
 				theBoard[i][j-1]->setType('-');
