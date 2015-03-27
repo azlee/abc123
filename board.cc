@@ -20,13 +20,13 @@ void Board::clearBoard(){
 }
 
 //public:
-Board::Board():level(0),score(0){}
+Board::Board():score(0){}
 
 Board::Board(ifstream &f):level(0),score(0){
     string aline;
     for(int i=0;i<10;i++){
         getline(f,aline);
-        cout << aline << " this is aline" << endl;
+        //cout << aline << " this is aline" << endl;
         istringstream ss1(aline);
         for(int j=0;j<10;j++){
             int c;
@@ -47,22 +47,6 @@ int Board::getScore() {
 void Board::setScore(int incr) {
 	score += incr;
 }
-
-
-
-
-//  Board(int seed);
-//  bool validMove(); //check if there are anymore moves left
-//  void scramble();
-//  void hint(); //prints a square or return a move
-//  void mutateBoard(int x, int y, int c, char t=0, char s=0);
-//  void swap(int x, int y, char d);
-//  void fillBoard(int l);
-//  Square getBoard();
-//  int getLevel();
-//  int getScore();
-//  void setLevel(int l);
-//  void setScore(int s);
 
 void Board::swap(int r, int c, char z) {
 	int tempColor;
@@ -106,15 +90,76 @@ void Board::swap(int r, int c, char z) {
 	}
 }
 
+bool validMove(int r, int c, char d) {
+	int tempColor;
+	int newR, newC;
+	if (z == 0) { //north
+		newR = r-1;
+		newC = c;
+	}
+	else if (z == 1) { //south
+		newR = r + 1
+		newC = c;
+	}
+	else if (z == 2) { //west
+		newR = r;
+		newC = c - 1;
+	}
+	else if (z == 3) { //east
+		newR = r;
+		newC = c + 1;
+	}
+	Square *tempBoard = new Square[10][10];
+	for (int i = 0; i<10; i++) { // set the tempBoard square colours
+		for (int j =0; j<10; j++) {
+			tempBoard[i][j]->setColour(mainBoard[i][j]->getColour());
+		}
+	}
+	// swap the cells color
+	tempColour = mainBoard[r][c]->getColour();
+	tempBoard[r][c]->setColour(mainBoard[r][c]->getColour());
+	tempBoard[newR][newC]->setColour(tempColour);
+	
+	
+	// check for match of 3 in the tempBoard 
+	int color1, color2, color3;
+	// check all rows for row of 3 squares of same colour
+	for (int i=0; i < 10; i++) {
+		for (int j=0; j < 8; j++) {
+			color1 = tempBoard[i][j]->getColour();
+			color2 = tempBoard[i][j+1]->getColour();
+			color3 = tempBoard[i][j+2]->getColour();
+			if (color1 == color2 && color2 == color3) {
+				delete tempBoard;
+				return true;
+			}
+		}
+	}
+	// check all coloumns for col of 3 squares of same color
+	for (int j=0; j<10: j++) {
+		for (int i=0; i<8; i++) {
+			color1 = tempBoard[i][j]->getColour();
+			color2 = tempBoard[i+1][j]->getColour();
+			color3 = tempBoard[i + 2][j]->getColour();
+			if (color1 == color2 && color2 == color3) {
+				delete tempBoard;
+				return true;
+			}
+		}
+	}
+	delete tempBoard;
+	return false;
+}
+
 bool Board::checkMatch() {
 	// check for match of 3 in the board 
 	int color1, color2, color3;
 	// check all rows for row of 3 squares of same colour
 	for (int i=0; i < 10; i++) {
 		for (int j=0; j < 8; j++) {
-			color1 = theBoard[i][j];
-			color2 = theBoard[i][j+1];
-			color3 = theBoard[i][j+2];
+			color1 = theBoard[i][j]->getColour();
+			color2 = theBoard[i][j+1]->getColour();
+			color3 = theBoard[i][j+2]->getColour();
 			if (color1 == color2 && color2 == color3) {
 				return true;
 			}
@@ -123,9 +168,9 @@ bool Board::checkMatch() {
 	// check all coloumns for col of 3 squares of same color
 	for (int j=0; j<10: j++) {
 		for (int i=0; i<8; i++) {
-			color1 = theBoard[i][j];
-			color2 = theBoard[i+1][j];
-			color3 = theBoard[i + 2][j];
+			color1 = theBoard[i][j]->getColour();
+			color2 = theBoard[i+1][j]->getColour();
+			color3 = theBoard[i + 2][j]->getColour();
 			if (color1 == color2 && color2 == color3) {
 				return true;
 			}
