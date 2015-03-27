@@ -13,7 +13,7 @@ using namespace std;
 void Board::clearBoard(){
     for(int i=0;i<10;i++){
         for(int j=0;j<10;j++){
-            delete theBoard[i][j];
+            delete [] theBoard[i][j];
             theBoard[i][j] = NULL;
         }
     }
@@ -75,12 +75,12 @@ void Board::swap(int r, int c, char z) {
 	tempSpecial = theBoard[r][c]->getSpecial();
 	locked1 = theBoard[r][c]->getLocked();
 
-	delete theBoard[r][c];
+	delete [] theBoard[r][c];
 	theBoard[r][c] = new Square(r, c, theBoard[newR][newC]->getColour(),theBoard[newR][newC]->getType, theBoard[newR][newC]->special);
 	theBoard[r][c]->setLocked(theBoard[newR][newC]->getLocked());
 	//mainBoard[r-1][c]->setPosition(newR, newC);
 
-	delete theBoard[newR][newC];
+	delete [] theBoard[newR][newC];
 	theBoard[newR][newC] = new Square(newR, newC, tempColour, tempType, tempSpecial);
 	theBoard[newR][newC]->setLocked(locked1);
 	//mainBoard[r-1][c]->setPosition(newR, newC);
@@ -130,7 +130,7 @@ bool validMove(int r, int c, char d) {
 			color2 = tempBoard[i][j+1]->getColour();
 			color3 = tempBoard[i][j+2]->getColour();
 			if (color1 == color2 && color2 == color3) {
-				delete tempBoard;
+				delete [] tempBoard;
 				return true;
 			}
 		}
@@ -147,7 +147,7 @@ bool validMove(int r, int c, char d) {
 			}
 		}
 	}
-	delete tempBoard;
+	delete [] tempBoard;
 	return false;
 }
 
