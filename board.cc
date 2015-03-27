@@ -20,7 +20,7 @@ void Board::clearBoard(){
 }
 
 //public:
-Board::Board():score(0){}
+Board::Board():score(0), leftoverLen(0) {}
 
 Board::Board(ifstream &f):level(0),score(0){
     string aline;
