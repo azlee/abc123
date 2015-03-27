@@ -798,5 +798,5 @@ ostream& operator<<(ostream &out, const Board &b){
         out << endl;
     }
     return out;
-}
+} 
 
