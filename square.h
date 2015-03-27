@@ -4,7 +4,7 @@
 
 class Square{
     int colour;
-    char type;
+    char type; // 'b' for basic, 'p' for psychedelic, 'u' for upright, 's' for unstable, 'l' for lateral
     char special;
     int r; 
     int c;
