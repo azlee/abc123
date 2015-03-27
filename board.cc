@@ -768,7 +768,7 @@ void Board::checkL4() { // check first L shape
 				}
 			}
 		}
-	}
+	} 
 }
 
 void Board::resolveMatches() {
