@@ -11,6 +11,11 @@ int Square::getColour(){
 	return colour;
 }
 
+void Square::changeSquare(int colour, char type) {
+	this->colour = colour;
+	this->type = type;
+}
+
 void Square::setColour(int colour) {
 	colour(colour);
 }
