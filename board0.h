@@ -2,7 +2,7 @@
 #define __BOARD0_H__
 #include <iostream>
 #include <string>
-#include "Board.h"
+#include "board.h"
 
 class Board0 : public{
     private:
