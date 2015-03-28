@@ -41,4 +41,3 @@ void Board0::updateBoard() { // fill in empty squares
         numEmptySquare = 0; // reset for next column
     }
 }
-}
