@@ -14,6 +14,7 @@ class Square{
     bool locked;
 public:
     Square(int r, int c, int colour, char t=0, char s=0);
+    void changeSquare(int colour, char type);
     //void mutatesquare(int x, int y, int c, char t=0, char s=0);
     int getColour();
     char getType();
