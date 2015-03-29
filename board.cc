@@ -815,8 +815,6 @@ void Board::check4Row() {
     int numUpright=0;
     int uprightC[4]; // if an uprightSquare is involved in a match then keep track of it's column 
                   // to later rid all those cells in that column 
-    int uprightC=0; // if an uprightSquare is involved in a match then keep track of it's column 
-                  // to later rid all those cells in that column 
     int lateralR; // if a lateralSquare is involved in a match then keep track of it's row
                 // to later rid all those cells in that row
     // check all rows for row of 5 squares of same color
@@ -899,8 +897,6 @@ void Board::check4Column() {
     int numLateral=0;
     int uprightC; // if an uprightSquare is involved in a match then keep track of it's column 
                   // to later rid all those cells in that column 
-    int lateralR; // if a lateralSquare is involved in a match then keep track of it's row
-                // to later rid all those cells in that row
     // check all rows for row of 5 squares of same color
     for (int j=0; j < 10; j++) {
         for (int i=6; i != -1; i--) {
@@ -980,8 +976,6 @@ void Board::check3Row() {
     bool lateral = false;
     int numUpright=0;
     int uprightC[3]; // if an uprightSquare is involved in a match then keep track of it's column 
-                  // to later rid all those cells in that column 
-    int uprightC=0; // if an uprightSquare is involved in a match then keep track of it's column 
                   // to later rid all those cells in that column 
     int lateralR; // if a lateralSquare is involved in a match then keep track of it's row
                 // to later rid all those cells in that row
@@ -1063,8 +1057,6 @@ void Board::check3Column() {
     int numLateral=0;
     int uprightC; // if an uprightSquare is involved in a match then keep track of it's column 
                   // to later rid all those cells in that column 
-    int lateralR; // if a lateralSquare is involved in a match then keep track of it's row
-                // to later rid all those cells in that row
     // check all rows for row of 5 squares of same color
     for (int j=0; j < 10; j++) {
         for (int i=6; i != -1; i--) {
@@ -1195,7 +1187,7 @@ void Board::checkL1() { // check first L shape
                     else if (theBoard[i][j+j2]->getType() == 'h') {
                         if (lateral == false) {
                             lateralR[numLateral] = i;
-                            numLateral++
+                            numLateral++;
                             lateral = true;
                         }
                         theBoard[i][j+j2]->setType('_');
@@ -1220,11 +1212,14 @@ void Board::checkL1() { // check first L shape
                     psychedelic = false;
                 }
                 if (upright == true) {
+				for (int z=0; z<numUpright; z++) {
+					int col = uprightC[numUpright];
                     for (int j3 = 0; j3 < 10; j3++) { // set the entire column to type '-'
-                        theBoard[j3][uprightC]->setColour(6);
+                        theBoard[j3][col]->setColour(6);
                     }
-                    upright = false;
                 }
+				upright = false;
+				}
                 if (lateral == true) {
                     for (int n = 0; n< numLateral; n++) {
                         int row = lateralR[n];
@@ -1302,7 +1297,7 @@ void Board::checkL2() { // check first L shape
                     else if (theBoard[i][j+j2]->getType() == 'h') {
                         if (lateral == false) {
                             lateralR[numLateral] = i;
-                            numLateral++
+                            numLateral++;
                             lateral = true;
                         }
                         theBoard[i][j+j2]->setType('_');
@@ -1327,8 +1322,10 @@ void Board::checkL2() { // check first L shape
                     psychedelic = false;
                 }
                 if (upright == true) {
+				for (int x=0; x<numUpright; x++) {
+					int col = uprightC[numUpright];
                     for (int j3 = 0; j3 < 10; j3++) { // set the entire column to type '-'
-                        theBoard[j3][uprightC]->setColour(6);
+                        theBoard[j3][col]->setColour(6);
                     }
                     upright = false;
                 }
@@ -1345,6 +1342,7 @@ void Board::checkL2() { // check first L shape
             }
         }
     }
+}
 }
 
 void Board::checkL3() { // check first L shape 
@@ -1399,7 +1397,7 @@ void Board::checkL3() { // check first L shape
                     else if (theBoard[i][j - j2]->getType() == 'v') {
                         upright = true;
                         uprightC[numUpright] = j - j2;
-                        numUpright++
+                        numUpright++;
                         theBoard[i][j-j2]->setType('_');
                     }
                     else if (theBoard[i][j-j2]->getType() == 'b') {
@@ -1433,8 +1431,10 @@ void Board::checkL3() { // check first L shape
                     psychedelic = false;
                 }
                 if (upright == true) {
+				for (int x=0; x<numUpright; x++) {
+					int col = uprightC[numUpright];
                     for (int j3 = 0; j3 < 10; j3++) { // set the entire column to type '-'
-                        theBoard[j3][uprightC]->setColour(6);
+                        theBoard[j3][col]->setColour(6);
                     }
                     upright = false;
                 }
@@ -1539,8 +1539,10 @@ void Board::checkL4() { // check first L shape
                     psychedelic = false;
                 }
                 if (upright == true) {
+				for (int y=0; y<numUpright; y++) {
+					int col = uprightC[numUpright];
                     for (int j3 = 0; j3 < 10; j3++) { // set the entire column to type '-'
-                        theBoard[j3][uprightC]->setColour(6);
+                        theBoard[j3][col]->setColour(6);
                     }
                     upright = false;
                 }
@@ -1557,6 +1559,7 @@ void Board::checkL4() { // check first L shape
             }
         }
     }
+}
 }
 
 Board::~Board(){
@@ -1645,3 +1648,4 @@ int main(){
 
 	cout << "leftover is " << b.getLeftover() <<endl;
 }
+
