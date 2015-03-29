@@ -3,6 +3,7 @@
 #include <sstream>
 #include <string>
 #include "board.h"
+#include "board0.h"
 #include "square.h"
 using namespace std;
 
@@ -20,10 +21,11 @@ void Board::clearBoard(){
 }
 
 //public:
-Board::Board():level(0),score(0){}
+//Board::Board():level(0),score(0){}
 
 //initializer for Board0
-Board::Board(ifstream &f):level(0),score(0){
+
+Board::Board(ifstream &f):level(0),score(0),numGenerated(0){
     string aline;
     for(int i=0;i<10;i++){
         getline(f,aline);
@@ -36,8 +38,25 @@ Board::Board(ifstream &f):level(0),score(0){
         }
     }
     f >> leftover;
+	leftoverLen=leftover.length();
 }
-
+void Board::incrScore(int incr, int chain){
+	//if(incr>5){
+	//	incr *= 4;
+	//}
+	//else if(incr == 5){
+	//	incr *= 3;
+	//}
+	//else if(incr == 4){
+	//	incr *= 2;
+	//}
+	if(chain == 0){
+		score += incr;
+	}
+	else{
+		score += 2*chain*incr;
+	}
+}
 string Board::getLeftover() {
 	return leftover;
 }
@@ -639,8 +658,9 @@ bool Board::checkMatch() {
 }
 
 // check for 5 match horizontally
-void Board::check5Row() {
+void Board::check5Row(int chain) {
     int color1, color2, color3, color4, color5;
+	int incre =0 ;
     // keep track of whether one of the squares involved in the match was a different type of square 
     bool psychedelic = false;
     bool unstable = false;
@@ -688,12 +708,14 @@ void Board::check5Row() {
                 theBoard[i][j+2]->setType('p'); // set center square to 'p' type
                 theBoard[i][j+3]->setColour(6);
                 theBoard[i][j+4]->setColour(6);
+				incre +=5;
                 if (psychedelic == true) {// if psychedelic square was involved in the match
                     // set all squares in the board of same color to '-' type
                     for (int i2=0; i2 < 10; i2++) {
                         for (int j2=0; j2 < 10; j2++) {
                             if (theBoard[i2][j2]->getColour() == color1) 
                                 theBoard[i2][j2]->setColour(6);
+								incre++;
 								theBoard[i2][j2]->setType('_');
                             }
                     }
@@ -704,27 +726,36 @@ void Board::check5Row() {
 					for (int u1=0; u1 < numUpright; u1++) { // set the entire column to type '-'
                         int j4 = uprightC[u1];
 						for (int j3 = 0; j3 < 10; j3++) {
-							theBoard[j3][j4]->setColour(6);
-							theBoard[j3][j4]->setType('_');
+							if(theBoard[j3][j4]->getColour() != 6){
+								theBoard[j3][j4]->setColour(6);
+								incre++;
+								theBoard[j3][j4]->setType('_');
+							}
                     	}
                 	}
 					upright=false;
 				}
                 if (lateral == true) {
                     for (int i3=0; i3<10; i3++) { // set the entire row to type '-'
-                        theBoard[lateralR][i3]->setColour(6);
-						theBoard[lateralR][i3]->setType('_');
+						if(theBoard[lateralR][i3]->getColour() != 6){
+	                        theBoard[lateralR][i3]->setColour(6);
+							incre++;
+							theBoard[lateralR][i3]->setType('_');
+						}
                     }
 					lateral = false;
                 }
+                theBoard[i][j+2]->setType('p');
             }
         }
     }
+	incrScore(incre,chain);
 }
 
 // check for 5 match vertically
-void Board::check5Column() {
+void Board::check5Column(int chain) {
     int color1, color2, color3, color4, color5;
+	int incre=0;
     // keep track of whether one of the squares involved in the match was a different type of square 
     bool psychedelic = false;
     bool unstable = false;
@@ -757,7 +788,7 @@ void Board::check5Column() {
                     }
                     else if (theBoard[i+k][j]->getType() == 'b') { // unstable square involved
                         unstable = true;
-                        theBoard[i+k][j];
+                        theBoard[i+k][j]->setType('_');
                     }
                     else if (theBoard[i+k][j]->getType() == 'h') {
                         lateral = true;
@@ -771,12 +802,14 @@ void Board::check5Column() {
                 theBoard[i+2][j]->setType('p'); // set center square to 'p' type
                 theBoard[i+3][j]->setColour(6);
                 theBoard[i+4][j]->setColour(6);
+				incre += 5;
                 if (psychedelic == true) {// if psychedelic square was involved in the match
                     // set all squares in the board of same color to '-' type
                     for (int i2=0; i2 < 10; i2++) {
                         for (int j2=0; j2 < 10; j2++) {
                             if (theBoard[i2][j2]->getColour() == color1) {
                                 theBoard[i2][j2]->setColour(6);
+								incre++;
 								theBoard[i2][j2]->setType('_');
                             }
                         }
@@ -785,28 +818,36 @@ void Board::check5Column() {
                 }
                 if (upright == true) {
                     for (int j3 = 0; j3 < 10; j3++) { // set the entire column to type '-'
-                        theBoard[j3][uprightC]->setColour(6);
-						theBoard[j3][uprightC]->setType('_');
+						if(theBoard[j3][uprightC]->getColour() != 6){
+	                        theBoard[j3][uprightC]->setColour(6);
+							incre++;
+							theBoard[j3][uprightC]->setType('_');
+						}
                     }
 					upright = false;
                 }
                 if (lateral == true) {
 					for (int n = 0; n< numLateral; n++) {
 						int row = lateralR[n];
-							for (int i3=0; i3<10; i3++) { // set the entire row to type '-'
-                        		theBoard[row][i3]->setColour(6);
+						for (int i3=0; i3<10; i3++) { // set the entire row to type '-'
+							if(theBoard[row][i3]->getColour()!= 6){
+	                       		theBoard[row][i3]->setColour(6);
+								incre++;
 								theBoard[row][i3]->setType('_');
-                    		}
+							}
+                    	}
                 	}
 				lateral = false;
             	}
+                theBoard[i+2][j]->setType('p');
         }
     }
 }
 }
 
-void Board::explode(int r, int c, int numSize) {
-    if ((numSize==3 && (r >=1) && (c>=1)) {
+int Board::explode(int r, int c, int numSize) {
+	int numMutated=0;
+    if (numSize==3 && (r >=1) && (c>=1)) {
         for (int i=r-1; i<= r + 1; i++){
             if (i<0 || i > 9) {break;}
             else {
@@ -815,13 +856,16 @@ void Board::explode(int r, int c, int numSize) {
                         break;
                     }
                     else {
-                        theBoard[i][j]->setColour(6);
-                        theBoard[i][j]->setType('_');
-                    }
-                }
-            }
-        }
-    }
+						if (theBoard[i][j]->getColour() != 6 && theBoard[i][j]->getType() != '_') {
+                        	theBoard[i][j]->setColour(6);
+                        	theBoard[i][j]->setType('_');
+                    		numMutated++;
+						}
+                	}
+            	}
+        	}
+    	}
+	}
     else if ((numSize==5 && (r>=2) && (c>=2))) {
         for (int i2=r-2; i2<=r + 2; i2++) {
             if (i2<0 || i2>9) {break;}
@@ -830,33 +874,36 @@ void Board::explode(int r, int c, int numSize) {
                     if (j2 <0 || j2 >9) {
                         break;
                     }
-                    else {
-                        theBoard[i2][j2]->setColour(6);
-                        theBoard[i2][j2]->setType('_');
+                    else if (theBoard[i2][j2]->getColour() != 6 && theBoard[i2][j2]->getType() != '_') {
+                        	theBoard[i2][j2]->setColour(6);
+                        	theBoard[i2][j2]->setType('_');
+							numMutated++;
                     }
                 }
             }
         }
     }
+	return numMutated;
 }
 
 // check for 4 match horizontally
-void Board::check4Row() {
+void Board::check4Row(int chain) {
     int color1, color2, color3, color4;
+	int incre =0;
     // keep track of whether one of the squares involved in the match was a different type of square 
     bool psychedelic = false;
     bool unstable = false;
     bool upright = false;
     bool lateral = false;
-    int numUnstable = 0;
-    int unstableR[5];
-    int unstableC[5];
     int numUpright=0;
+	int numUnstable=0;
+	int unstableR[4];
+	int unstableC[4];
+	int r,c;
     int uprightC[4]; // if an uprightSquare is involved in a match then keep track of it's column 
                   // to later rid all those cells in that column 
     int lateralR; // if a lateralSquare is involved in a match then keep track of it's row
                 // to later rid all those cells in that row
-    int r,c;
     // check all rows for row of 5 squares of same color
     for (int i=9; i != -1; i--) {
         for (int j=0; j < 7; j++) {
@@ -878,9 +925,10 @@ void Board::check4Row() {
                         theBoard[i][j+k]->setType('_');
                     }
                     else if (theBoard[i][j+k]->getType() == 'b') { // unstable square involved
-                        unstableR[numUnstable] = i;
-                        unstableC[numUnstable] = j+k;
-                        numUnstable++;
+                        unstableR[numUnstable]=i;
+						unstableC[numUnstable]=j+k;
+						numUnstable++;
+						unstable = true;
                         theBoard[i][j+k]->setType('_');
                     }
                     else if (theBoard[i][j+k]->getType() == 'h') {
@@ -892,50 +940,63 @@ void Board::check4Row() {
                 theBoard[i][j]->setColour(6); // set squares to '-' type
                 theBoard[i][j+1]->setType('h'); // set type to 'h' lateral type
                 theBoard[i][j+2]->setColour(6);
-                //theBoard[i][j+1]->setColour(6);
                 theBoard[i][j+3]->setColour(6);
-                if (unstable == true) {
-                    for (int z=0; z<numUnstable; z++) {
-                        r = unstableR[z];
-                        c = unstableC[z];
-                        explode(r,c,5);
-                    }
-                }
+				incre += 4;
                 if (psychedelic == true) {// if psychedelic square was involved in the match
                     // set all squares in the board of same color to '-' type
                     for (int i2=0; i2 < 10; i2++) {
                         for (int j2=0; j2 < 10; j2++) {
                             if (theBoard[i2][j2]->getColour() == color1) {
                                  theBoard[i2][j2]->setColour(6);
+                                 theBoard[i2][j2]->setType('_');
+								incre++;
                             }
                         }
                     }
                     psychedelic = false;
                 }
+				if (unstable == true) {
+					for (int z=0; z<numUnstable; z++) {
+						r = unstableR[z];
+						c = unstableC[z];
+						incre += explode(r,c,5);
+					}
+                    unstable = false;
+				}
                 if (upright == true) {
                     for (int u1=0; u1 < numUpright; u1++) { // set the entire column to type '-'
                         int j4 = uprightC[u1];
                         for (int j3 = 0; j3 < 10; j3++) {
-                            theBoard[j3][j4]->setColour(6);
-                            theBoard[j3][j4]->setType('_');
+							if(theBoard[j3][j4]->getColour() != 6){
+	                            theBoard[j3][j4]->setColour(6);
+								incre++;
+        	                    theBoard[j3][j4]->setType('_');
+							}
                         }
                     }
                     upright=false;
                 }
                 if (lateral == true) {
                     for (int i3=0; i3<10; i3++) { // set the entire row to type '-'
-                        theBoard[lateralR][i3]->setColour(6);
+						if(theBoard[lateralR][i3]->getColour() != 6){
+                            theBoard[lateralR][i3]->setType('_');
+                        	theBoard[lateralR][i3]->setColour(6);
+							incre++;
+						}
                     }
                     lateral = false;
                 }
+                theBoard[i][j+1]->setType('h');
             }
         }
     }
+	incrScore(incre,chain);
 }
 
 // check for 4 match vertically
-void Board::check4Column() {
+void Board::check4Column(int chain) {
     int color1, color2, color3, color4;
+	int incre=0;
     // keep track of whether one of the squares involved in the match was a different type of square 
     bool psychedelic = false;
     bool unstable = false;
@@ -944,6 +1005,10 @@ void Board::check4Column() {
     int lateralR[5]; // if a lateralSquare is involved in a match then keep track of it's row
                 // to later rid all those cells in that row
     int numLateral=0;
+    int numUnstable=0;
+    int unstableR[4];
+    int unstableC[4];
+    int r,c;
     int uprightC; // if an uprightSquare is involved in a match then keep track of it's column 
                   // to later rid all those cells in that column 
     // check all rows for row of 5 squares of same color
@@ -966,8 +1031,11 @@ void Board::check4Column() {
                         theBoard[i+k][j]->setType('_');
                     }
                     else if (theBoard[i+k][j]->getType() == 'b') { // unstable square involved
+                        unstableR[numUnstable]=i;
+                        unstableC[numUnstable]=j+k;
+                        numUnstable++;
                         unstable = true;
-                        theBoard[i+k][j]->setType('_');
+                        theBoard[i][j+k]->setType('_');
                     }
                     else if (theBoard[i+k][j]->getType() == 'h') {
                         lateral = true;
@@ -980,50 +1048,73 @@ void Board::check4Column() {
                 theBoard[i+1][j]->setColour(6);
                 theBoard[i+2][j]->setType('v'); // set square to 'v' upright type
                 theBoard[i+3][j]->setColour(6);
-                //theBoard[i+2][j]->setColour(6);
-                theBoard[i+1][j]->setColour(6);
-                theBoard[i+3][j]->setColour(6);
+				incre +=4;
                 if (psychedelic == true) {// if psychedelic square was involved in the match
                     // set all squares in the board of same color to '-' type
                     for (int i2=0; i2 < 10; i2++) {
                         for (int j2=0; j2 < 10; j2++) {
                             if (theBoard[i2][j2]->getColour() == color1) {
                                 theBoard[i2][j2]->setColour(6);
+                                 theBoard[i2][j2]->setType(6);
+								incre++;
                             }
                         }
                     }
                     psychedelic = false;
                 }
+                if (unstable == true) {
+                    for (int z=0; z<numUnstable; z++) {
+                        r = unstableR[z];
+                        c = unstableC[z];
+                        incre += explode(r,c,5);
+                    }
+                    unstable = false;
+                }
                 if (upright == true) {
                     for (int j3 = 0; j3 < 10; j3++) { // set the entire column to type '-'
-                        theBoard[j3][uprightC]->setColour(6);
+						if(theBoard[j3][uprightC]->getColour()!=6){
+	                        theBoard[j3][uprightC]->setColour(6);
+
+                            theBoard[j3][uprightC]->setType('_');
+							incre++;
+						}
                     }
                     upright = false;
                 }
                 if (lateral == true) {
                     for (int n = 0; n< numLateral; n++) {
                         int row = lateralR[n];
-                            for (int i3=0; i3<10; i3++) { // set the entire row to type '-'
+                        for (int i3=0; i3<10; i3++) { // set the entire row to type '-'
+							if(theBoard[row][i3]->getColour()!= 6){
                                 theBoard[row][i3]->setColour(6);
+								incre++;
                                 theBoard[row][i3]->setType('_');
                             }
+						}
                     }
                 lateral = false;
                 }
+                theBoard[i+2][j]->setType('v');
             }
         }
     }
+	incrScore(incre,chain);
 }
 
 // check for 3 match horizontally
-void Board::check3Row() {
+void Board::check3Row(int chain) {
     int color1, color2, color3, color4;
+	int incre=0;
     // keep track of whether one of the squares involved in the match was a different type of square 
     bool psychedelic = false;
     bool unstable = false;
     bool upright = false;
     bool lateral = false;
     int numUpright=0;
+    int numUnstable=0;
+    int unstableR[4];
+    int unstableC[4];
+    int r,c;
     int uprightC[3]; // if an uprightSquare is involved in a match then keep track of it's column 
                   // to later rid all those cells in that column 
     int lateralR; // if a lateralSquare is involved in a match then keep track of it's row
@@ -1048,6 +1139,9 @@ void Board::check3Row() {
                         theBoard[i][j+k]->setType('_');
                     }
                     else if (theBoard[i][j+k]->getType() == 'b') { // unstable square involved
+                        unstableR[numUnstable]=i;
+                        unstableC[numUnstable]=j+k;
+                        numUnstable++;
                         unstable = true;
                         theBoard[i][j+k]->setType('_');
                     }
@@ -1058,49 +1152,72 @@ void Board::check3Row() {
                     }
                 }
                 theBoard[i][j]->setColour(6); // set squares to '-' type
-                theBoard[i][j+1]->setType('h'); // set type to 'h' lateral type
+                theBoard[i][j+1]->setColour(6);
                 theBoard[i][j+2]->setColour(6);
-                //theBoard[i][j+1]->setColour(6);
+				incre+=3;
                 if (psychedelic == true) {// if psychedelic square was involved in the match
                     // set all squares in the board of same color to '-' type
                     for (int i2=0; i2 < 10; i2++) {
                         for (int j2=0; j2 < 10; j2++) {
                             if (theBoard[i2][j2]->getColour() == color1) {
                                  theBoard[i2][j2]->setColour(6);
+                                 theBoard[i2][j2]->setType('_');
+								incre++;
                             }
                         }
                     }
                     psychedelic = false;
                 }
+                if (unstable == true) {
+                    for (int z=0; z<numUnstable; z++) {
+                        r = unstableR[z];
+                        c = unstableC[z];
+                        incre += explode(r,c,5);
+                    }
+                    unstable = false;
+                }
                 if (upright == true) {
                     for (int u1=0; u1 < numUpright; u1++) { // set the entire column to type '-'
                         int j4 = uprightC[u1];
                         for (int j3 = 0; j3 < 10; j3++) {
-                            theBoard[j3][j4]->setColour(6);
-                            theBoard[j3][j4]->setType('_');
+							if(theBoard[j3][j4]->getColour != 6){
+	                            theBoard[j3][j4]->setColour(6);
+								incre++;
+        	                    theBoard[j3][j4]->setType('_');
+							}
                         }
                     }
                     upright=false;
                 }
                 if (lateral == true) {
                     for (int i3=0; i3<10; i3++) { // set the entire row to type '-'
-                        theBoard[lateralR][i3]->setColour(6);
+						if(theBoard[lateralR][i3]->getColour() != 6){
+	                        theBoard[lateralR][i3]->setColour(6);
+                            theBoard[lateralR][i3]->setType('_');
+							incre++;
+						}
                     }
                     lateral = false;
                 }
             }
         }
     }
+	incrScore(incre,chain);
 }
 
 // check for 3 match vertically
-void Board::check3Column() {
+void Board::check3Column(int chain) {
     int color1, color2, color3, color4;
+	int incre=0;
     // keep track of whether one of the squares involved in the match was a different type of square 
     bool psychedelic = false;
     bool unstable = false;
     bool upright = false;
     bool lateral = false;
+    int numUnstable=0;
+    int unstableR[4];
+    int unstableC[4];
+    int r,c;
     int lateralR[3]; // if a lateralSquare is involved in a match then keep track of it's row
                 // to later rid all those cells in that row
     int numLateral=0;
@@ -1125,8 +1242,11 @@ void Board::check3Column() {
                         theBoard[i+k][j]->setType('_');
                     }
                     else if (theBoard[i+k][j]->getType() == 'b') { // unstable square involved
+                        unstableR[numUnstable]=i;
+                        unstableC[numUnstable]=j+k;
+                        numUnstable++;
                         unstable = true;
-                        theBoard[i+k][j]->setType('_');
+                        theBoard[i][j+k]->setType('_');
                     }
                     else if (theBoard[i+k][j]->getType() == 'h') {
                         lateral = true;
@@ -1137,51 +1257,69 @@ void Board::check3Column() {
                 }
                 theBoard[i][j]->setColour(6); // set squares to '_' type
                 theBoard[i+1][j]->setColour(6);
-                theBoard[i+2][j]->setType('v'); // set square to 'v' upright type
-                theBoard[i+3][j]->setColour(6);
-                //theBoard[i+2][j]->setColour(6);
-                theBoard[i+1][j]->setColour(6);
-                theBoard[i+3][j]->setColour(6);
+                theBoard[i+2][j]->setColour(6)); // set square to 'v' upright type
+				incre +=3;
                 if (psychedelic == true) {// if psychedelic square was involved in the match
                     // set all squares in the board of same color to '-' type
                     for (int i2=0; i2 < 10; i2++) {
                         for (int j2=0; j2 < 10; j2++) {
                             if (theBoard[i2][j2]->getColour() == color1) {
                                 theBoard[i2][j2]->setColour(6);
+                                theBoard[i2][j2]->setType('_');
+								incre++;
                             }
                         }
                     }
                     psychedelic = false;
                 }
+                if (unstable == true) {
+                    for (int z=0; z<numUnstable; z++) {
+                        r = unstableR[z];
+                        c = unstableC[z];
+                        incre += explode(r,c,5);
+                    }
+                    unstable = false;
+                }
                 if (upright == true) {
                     for (int j3 = 0; j3 < 10; j3++) { // set the entire column to type '-'
                         theBoard[j3][uprightC]->setColour(6);
+                        theBoard[j3][uprightC]->setType('_');
+						incre++;
                     }
                     upright = false;
                 }
                 if (lateral == true) {
                     for (int n = 0; n< numLateral; n++) {
                         int row = lateralR[n];
-                            for (int i3=0; i3<10; i3++) { // set the entire row to type '-'
+                        for (int i3=0; i3<10; i3++) { // set the entire row to type '-'
+							if(theBoard[row][i3]->getColour()!=6){
                                 theBoard[row][i3]->setColour(6);
+								incre++;
                                 theBoard[row][i3]->setType('_');
                             }
+						}
                     }
                 lateral = false;
                 }
             }
         }
     }
+	incrScore(incre,chain);
 }
 
-void Board::checkL1() { // check first L shape 
+void Board::checkL1(int chain) { // check first L shape 
     int color1, color2, color3, color4, color5;
+	int incre=0;
     bool psychedelic = false;
     bool unstable = false;
     bool upright = false;
     bool lateral = false;
     int numUpright = 0;
     int numLateral = 0;
+    int numUnstable=0;
+    int unstableR[4];
+    int unstableC[4];
+    int r,c;
     int uprightC[3]; // if an uprightSquare is involved in a match then keep track of it's column 
                   // to later rid all those cells in that column 
     int lateralR[3]; // if a lateralSquare is involved in a match
@@ -1208,8 +1346,11 @@ void Board::checkL1() { // check first L shape
                         theBoard[i+i2][j]->setType('_');
                     }
                     else if (theBoard[i+i2][j]->getType() == 'b') { // unstable square involved
+                        unstableR[numUnstable]=i;
+                        unstableC[numUnstable]=j+k;
+                        numUnstable++;
                         unstable = true;
-                        theBoard[i+i2][j]->setType('_');
+                        theBoard[i][j+k]->setType('_');
                     }
                     else if (theBoard[i+i2][j]->getType() == 'h') {
                         lateral = true;
@@ -1223,6 +1364,7 @@ void Board::checkL1() { // check first L shape
                         psychedelic = true;
                         theBoard[i][j+j2]->setType('_');
                     }
+
                     else if (theBoard[i][j + j2]->getType() == 'v') {
                         upright = true;
                         uprightC[numUpright] = j + j2;
@@ -1230,8 +1372,11 @@ void Board::checkL1() { // check first L shape
                         theBoard[i][j+j2]->setType('_');
                     }
                     else if (theBoard[i][j+j2]->getType() == 'b') {
+                        unstableR[numUnstable]=i;
+                        unstableC[numUnstable]=j+k;
+                        numUnstable++;
                         unstable = true;
-                        theBoard[i][j+j2]->setType('_');
+                        theBoard[i][j+k]->setType('_');
                     }
                     else if (theBoard[i][j+j2]->getType() == 'h') {
                         if (lateral == false) {
@@ -1247,6 +1392,7 @@ void Board::checkL1() { // check first L shape
                 theBoard[i+2][j]->setColour(6);
                 theBoard[i][j+1]->setColour(6);
                 theBoard[i][j+2]->setColour(6);
+				incre += 5;
                 //theBoard[i][j]->setColour(6);
 
                 if (psychedelic == true) {// if psychedelic square was involved in the match
@@ -1255,16 +1401,30 @@ void Board::checkL1() { // check first L shape
                         for (int j2=0; j2 < 10; j2++) {
                             if (theBoard[i2][j2]->getColour() == color1) {
                                 theBoard[i2][j2]->setColour(6);
+                                theBoard[i2][j2]->setType('_');
+								incre++;
                             }
                         }
                     }
                     psychedelic = false;
                 }
+                if (unstable == true) {
+                    for (int z=0; z<numUnstable; z++) {
+                        r = unstableR[z];
+                        c = unstableC[z];
+                        incre += explode(r,c,5);
+                    }
+                    unstable = false;
+                }
                 if (upright == true) {
 				for (int z=0; z<numUpright; z++) {
 					int col = uprightC[numUpright];
                     for (int j3 = 0; j3 < 10; j3++) { // set the entire column to type '-'
-                        theBoard[j3][col]->setColour(6);
+						if(theBoard[j3][col]->getColour() != 6){
+	                        theBoard[j3][col]->setColour(6);
+                            theBoard[j3][col]->setType('_');
+							incre++;
+						}
                     }
                 }
 				upright = false;
@@ -1272,26 +1432,36 @@ void Board::checkL1() { // check first L shape
                 if (lateral == true) {
                     for (int n = 0; n< numLateral; n++) {
                         int row = lateralR[n];
-                            for (int i3=0; i3<10; i3++) { // set the entire row to type '-'
+                        for (int i3=0; i3<10; i3++) { // set the entire row to type '-'
+							if(theBoard[row][i3]->getColour()!=6){
                                 theBoard[row][i3]->setColour(6);
+								incre++;
                                 theBoard[row][i3]->setType('_');
                             }
+						}
                     }
                 lateral = false;
                 }
+                theBoard[i][j]->setType('b');
             }
         }
     }
+	incrScore(incre,chain);
 }
 
-void Board::checkL2() { // check first L shape 
+void Board::checkL2(int chain) { // check first L shape 
     int color1, color2, color3, color4, color5;
+	int incre=0;
     bool psychedelic = false;
     bool unstable = false;
     bool upright = false;
     bool lateral = false;
     int numUpright = 0;
     int numLateral = 0;
+    int numUnstable=0;
+    int unstableR[4];
+    int unstableC[4];
+    int r,c;
     int uprightC[3]; // if an uprightSquare is involved in a match then keep track of it's column 
                   // to later rid all those cells in that column 
     int lateralR[3]; // if a lateralSquare is involved in a match
@@ -1318,8 +1488,11 @@ void Board::checkL2() { // check first L shape
                         theBoard[i+i2][j]->setType('_');
                     }
                     else if (theBoard[i-i2][j]->getType() == 'b') { // unstable square involved
+                        unstableR[numUnstable]=i;
+                        unstableC[numUnstable]=j+k;
+                        numUnstable++;
                         unstable = true;
-                        theBoard[i-i2][j]->setType('_');
+                        theBoard[i][j+k]->setType('_');
                     }
                     else if (theBoard[i-i2][j]->getType() == 'h') {
                         lateral = true;
@@ -1340,8 +1513,11 @@ void Board::checkL2() { // check first L shape
                         theBoard[i][j+j2]->setType('_');
                     }
                     else if (theBoard[i][j+j2]->getType() == 'b') {
+                        unstableR[numUnstable]=i;
+                        unstableC[numUnstable]=j+k;
+                        numUnstable++;
                         unstable = true;
-                        theBoard[i][j+j2]->setType('_');
+                        theBoard[i][j+k]->setType('_');
                     }
                     else if (theBoard[i][j+j2]->getType() == 'h') {
                         if (lateral == false) {
@@ -1357,7 +1533,7 @@ void Board::checkL2() { // check first L shape
                 theBoard[i-2][j]->setColour(6);
                 theBoard[i][j+1]->setColour(6);
                 theBoard[i][j+2]->setColour(6);
-                //theBoard[i][j]->setColour(6);
+				incre+=5;
 
                 if (psychedelic == true) {// if psychedelic square was involved in the match
                     // set all squares in the board of same color to '-' type
@@ -1365,43 +1541,68 @@ void Board::checkL2() { // check first L shape
                         for (int j2=0; j2 < 10; j2++) {
                             if (theBoard[i2][j2]->getColour() == color1) {
                                 theBoard[i2][j2]->setColour(6);
+                                theBoard[i2][j2]->setType('_');
+								incre++;
                             }
                         }
                     }
                     psychedelic = false;
                 }
-                if (upright == true) {
-				for (int x=0; x<numUpright; x++) {
-					int col = uprightC[numUpright];
-                    for (int j3 = 0; j3 < 10; j3++) { // set the entire column to type '-'
-                        theBoard[j3][col]->setColour(6);
+                if (unstable == true) {
+                    for (int z=0; z<numUnstable; z++) {
+                        r = unstableR[z];
+                        c = unstableC[z];
+                        incre += explode(r,c,5);
                     }
-                    upright = false;
+                    unstable = false;
                 }
+                if (upright == true) {
+					for (int x=0; x<numUpright; x++) {
+						int col = uprightC[numUpright];
+                    	for (int j3 = 0; j3 < 10; j3++) { // set the entire column to type '-'
+							if(theBoard[j3][col]->getColour()!=6){
+	                        	theBoard[j3][col]->setColour(6);
+                                theBoard[j3][col]->setType('_');
+								incre++;
+							}
+                    	}
+                    	upright = false;
+                	}
+				}
                 if (lateral == true) {
                     for (int n = 0; n< numLateral; n++) {
                         int row = lateralR[n];
-                            for (int i3=0; i3<10; i3++) { // set the entire row to type '-'
-                                theBoard[row][i3]->setColour(6);
-                                theBoard[row][i3]->setType('_');
-                            }
+                        for (int i3=0; i3<10; i3++) { // set the entire row to type '-'
+							if(theBoard[row][i3]->getColour()!=6){
+	                            theBoard[row][i3]->setColour(6);
+								incre++;
+        	                    theBoard[row][i3]->setType('_');
+							}
+                       }
                     }
-                lateral = false;
+                	lateral = false;
                 }
+                theBoard[i][j]->setType('b');
             }
         }
     }
-}
+	incrScore(incre,chain);
 }
 
-void Board::checkL3() { // check first L shape 
+
+void Board::checkL3(int chain) { // check first L shape 
     int color1, color2, color3, color4, color5;
+	int incre =0;
     bool psychedelic = false;
     bool unstable = false;
     bool upright = false;
     bool lateral = false;
     int numUpright = 0;
     int numLateral = 0;
+    int numUnstable=0;
+    int unstableR[4];
+    int unstableC[4];
+    int r,c;
     int uprightC[3]; // if an uprightSquare is involved in a match then keep track of it's column 
                   // to later rid all those cells in that column 
     int lateralR[3]; // if a lateralSquare is involved in a match
@@ -1428,8 +1629,11 @@ void Board::checkL3() { // check first L shape
                         theBoard[i+i2][j]->setType('_');
                     }
                     else if (theBoard[i-i2][j]->getType() == 'b') { // unstable square involved
+                        unstableR[numUnstable]=i;
+                        unstableC[numUnstable]=j+k;
+                        numUnstable++;
                         unstable = true;
-                        theBoard[i-i2][j]->setType('_');
+                        theBoard[i][j+k]->setType('_');
                     }
                     else if (theBoard[i-i2][j]->getType() == 'h') {
                         lateral = true;
@@ -1450,8 +1654,11 @@ void Board::checkL3() { // check first L shape
                         theBoard[i][j-j2]->setType('_');
                     }
                     else if (theBoard[i][j-j2]->getType() == 'b') {
+                        unstableR[numUnstable]=i;
+                        unstableC[numUnstable]=j+k;
+                        numUnstable++;
                         unstable = true;
-                        theBoard[i][j-j2]->setType('_');
+                        theBoard[i][j+k]->setType('_');
                     }
                     else if (theBoard[i][j-j2]->getType() == 'h') {
                         if (lateral == false) {}
@@ -1467,6 +1674,7 @@ void Board::checkL3() { // check first L shape
                 theBoard[i-2][j]->setColour(6);
                 theBoard[i][j-1]->setColour(6);
                 theBoard[i][j-2]->setColour(6);
+				incre +=5;
                 //theBoard[i][j]->setColour(6);
                 if (psychedelic == true) {// if psychedelic square was involved in the match
                     // set all squares in the board of same color to '-' type
@@ -1474,42 +1682,66 @@ void Board::checkL3() { // check first L shape
                         for (int j2=0; j2 < 10; j2++) {
                             if (theBoard[i2][j2]->getColour() == color1) {
                                 theBoard[i2][j2]->setColour(6);
+                                theBoard[i2][j2]->setType('_');
+								incre++;
                             }
                         }
                     }
                     psychedelic = false;
                 }
+                if (unstable == true) {
+                    for (int z=0; z<numUnstable; z++) {
+                        r = unstableR[z];
+                        c = unstableC[z];
+                        incre += explode(r,c,5);
+                    }
+                    unstable = false;
+                }
                 if (upright == true) {
 				for (int x=0; x<numUpright; x++) {
 					int col = uprightC[numUpright];
                     for (int j3 = 0; j3 < 10; j3++) { // set the entire column to type '-'
-                        theBoard[j3][col]->setColour(6);
+						if(theBoard[j3][col]->getColour()!=6){
+	                        theBoard[j3][col]->setColour(6);
+                            theBoard[j3][col]->setType('_');
+							incre++;
+						}
                     }
                     upright = false;
                 }
                 if (lateral == true) {
                     for (int n = 0; n< numLateral; n++) {
                         int row = lateralR[n];
-                            for (int i3=0; i3<10; i3++) { // set the entire row to type '-'
+                        for (int i3=0; i3<10; i3++) { // set the entire row to type '-'
+							if(theBoard[row][i3]->getColour() !=6){
                                 theBoard[row][i3]->setColour(6);
+								incre++;
                                 theBoard[row][i3]->setType('_');
                             }
+						}
                     }
                 lateral = false;
                 }
+                theBoard[i][j]->setType('b');
             }
         }
     }
+	incrScore(incre,chain);
 }
 
-void Board::checkL4() { // check first L shape 
+void Board::checkL4(int chain) { // check first L shape 
     int color1, color2, color3, color4, color5;
+	int incre=0;
     bool psychedelic = false;
     bool unstable = false;
     bool upright = false;
     bool lateral = false;
     int numUpright = 0;
     int numLateral = 0;
+    int numUnstable=0;
+    int unstableR[4];
+    int unstableC[4];
+    int r,c;
     int uprightC[3]; // if an uprightSquare is involved in a match then keep track of it's column 
                   // to later rid all those cells in that column 
     int lateralR[3]; // if a lateralSquare is involved in a match
@@ -1536,8 +1768,11 @@ void Board::checkL4() { // check first L shape
                         theBoard[i+i2][j]->setType('_');
                     }
                     else if (theBoard[i+i2][j]->getType() == 'b') { // unstable square involved
+                        unstableR[numUnstable]=i;
+                        unstableC[numUnstable]=j+k;
+                        numUnstable++;
                         unstable = true;
-                        theBoard[i+i2][j]->setType('_');
+                        theBoard[i][j+k]->setType('_');
                     }
                     else if (theBoard[i+i2][j]->getType() == 'h') {
                         lateral = true;
@@ -1558,8 +1793,11 @@ void Board::checkL4() { // check first L shape
                         theBoard[i][j-j2]->setType('_');
                     }
                     else if (theBoard[i][j-j2]->getType() == 'b') {
+                        unstableR[numUnstable]=i;
+                        unstableC[numUnstable]=j+k;
+                        numUnstable++;
                         unstable = true;
-                        theBoard[i][j-j2]->setType('_');
+                        theBoard[i][j+k]->setType('_');
                     }
                     else if (theBoard[i][j-j2]->getType() == 'h') {
                         if (lateral==false) {
@@ -1575,6 +1813,7 @@ void Board::checkL4() { // check first L shape
                 theBoard[i+2][j]->setColour(6);
                 theBoard[i][j-1]->setColour(6);
                 theBoard[i][j-2]->setColour(6);
+				incre+=5;
                 //theBoard[i][j]->setColour(6);
                 if (psychedelic == true) {// if psychedelic square was involved in the match
                     // set all squares in the board of same color to '-' type
@@ -1582,32 +1821,52 @@ void Board::checkL4() { // check first L shape
                         for (int j2=0; j2 < 10; j2++) {
                             if (theBoard[i2][j2]->getColour() == color1) {
                                 theBoard[i2][j2]->setColour(6);
+                                theBoard[i2][j2]->setType('_');
+								incre++;
                             }
                         }
                     }
                     psychedelic = false;
                 }
-                if (upright == true) {
-				for (int y=0; y<numUpright; y++) {
-					int col = uprightC[numUpright];
-                    for (int j3 = 0; j3 < 10; j3++) { // set the entire column to type '-'
-                        theBoard[j3][col]->setColour(6);
+                if (unstable == true) {
+                    for (int z=0; z<numUnstable; z++) {
+                        r = unstableR[z];
+                        c = unstableC[z];
+                        incre += explode(r,c,5);
                     }
-                    upright = false;
+                    unstable = false;
                 }
+                if (upright == true) {
+					for (int y=0; y<numUpright; y++) {
+						int col = uprightC[numUpright];
+                    	for (int j3 = 0; j3 < 10; j3++) { // set the entire column to type '-'
+							if(theBoard[j3][col]->getColour() != 6){
+	                        	theBoard[j3][col]->setColour(6);
+                                theBoard[j3][col]->setType('_');
+								incre++;
+							}
+                    	}
+                   	upright = false;
+                	}
+				}
                 if (lateral == true) {
                     for (int n = 0; n< numLateral; n++) {
                         int row = lateralR[n];
-                            for (int i3=0; i3<10; i3++) { // set the entire row to type '-'
+                        for (int i3=0; i3<10; i3++) { // set the entire row to type '-'
+							if(theBoard[row][i3]->getColour()!=6){
                                 theBoard[row][i3]->setColour(6);
+								incre++;
                                 theBoard[row][i3]->setType('_');
                             }
+						}
                     }
-                lateral = false;
+                	lateral = false;
                 }
+                theBoard[i][j]->setType('b');
             }
         }
     }
+	incrScore(incre,chain);
 }
 }
 
@@ -1625,53 +1884,14 @@ ostream& operator<<(ostream &out, const Board &b){
 	}
 	return out;
 } 
-
-
-void Board::updateBoard() {
-	int numEmpty = 0;
-numGenerated = 0;
-leftoverLen=leftover.length();
-	for (int j = 0; j<10; j++) {
-		for (int i=9;i!=-1; i--) {
-				if(theBoard[i][j]->getColour() == 6) {
-					for (int incr=1; i-incr >=0; incr++) {
-						if (theBoard[i-incr][j]->getColour() != 6) {
-							theBoard[i][j]->setType(theBoard[i-incr][j]->getType());
-							theBoard[i][j]->setColour(theBoard[i-incr][j]->getColour());
-							theBoard[i-incr][j]->setColour(6);
-							theBoard[i-incr][j]->setType('_');
-							break;
-						}
-					}
-				}
-			}
-numEmpty =0;
-		
-	}
-	for (int j2 = 0; j2<10; j2++) {
-		for (int i2=9; i2!=-1; i2--) {
-			if (theBoard[i2][j2]->getColour() == 6) {
-				int c;
-				if (numGenerated < leftoverLen) {
-					c= leftover[numGenerated] - 48;
-				}
-				else {
-					numGenerated=0;
-					c=leftover[numGenerated];
-				}
-				numGenerated++;
-				theBoard[i2][j2]->changeSquare(c, '_');
-			}
-		}
-}
-}
-    
+  
 int main(){
     ifstream f1("sequence.txt");
     string s;
     //f1 >> s;
     //cout << s << endl;
-    Board b(f1);
+    //Board b(f1);
+	Board0 b(f1);
     cout << b << endl;
     cout << "there you go" << endl;
 //  delete b;
@@ -1685,16 +1905,16 @@ int main(){
     cout << "swapped square at row 3, column 0 south." << endl;
     cout << b << endl;
 
-    cout << "Next board is after check5Row() and check5Column is called" <<endl;
+    cout << "Next board is after check4Row() and check5Column is called" <<endl;
 
-    b.check5Row();
-    b.check5Column();
+    b.check4Row();
+    //b.check5Column();
     cout << b << endl;
 
 	cout <<"We will now updateBoard() : " <<endl;
 	b.updateBoard();
 	cout << b << endl;
-
+	cout << b.getScore() << endl;
 	cout << "leftover is " << b.getLeftover() <<endl;
 }
 
