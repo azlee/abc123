@@ -626,6 +626,8 @@ void Board::swap(int r, int c, char z) {
     delete [] theBoard[newR][newC];
     theBoard[newR][newC] = new Square(newR, newC, tempColor, tempType, tempSpecial);
     theBoard[newR][newC]->setLocked(locked1);
+
+	//resolveMatches();
 }
 
 
@@ -746,6 +748,7 @@ void Board::check5Row(int chain) {
 					lateral = false;
                 }
                 theBoard[i][j+2]->setType('p');
+				theBoard[i][j+2]->setColour(color1);
             }
         }
     }
@@ -840,6 +843,7 @@ void Board::check5Column(int chain) {
 				lateral = false;
             	}
                 theBoard[i+2][j]->setType('p');
+				theBoard[i+2][j]->setColour(color1);
         }
     }
 }
@@ -987,6 +991,7 @@ void Board::check4Row(int chain) {
                     lateral = false;
                 }
                 theBoard[i][j+1]->setType('h');
+				theBoard[i][j+1]->setColour(color1);
             }
         }
     }
@@ -1055,7 +1060,7 @@ void Board::check4Column(int chain) {
                         for (int j2=0; j2 < 10; j2++) {
                             if (theBoard[i2][j2]->getColour() == color1) {
                                 theBoard[i2][j2]->setColour(6);
-                                 theBoard[i2][j2]->setType(6);
+                                 theBoard[i2][j2]->setType('_');
 								incre++;
                             }
                         }
@@ -1095,6 +1100,7 @@ void Board::check4Column(int chain) {
                 lateral = false;
                 }
                 theBoard[i+2][j]->setType('v');
+				theBoard[i+2][j]->setColour(color1);
             }
         }
     }
@@ -1112,8 +1118,8 @@ void Board::check3Row(int chain) {
     bool lateral = false;
     int numUpright=0;
     int numUnstable=0;
-    int unstableR[4];
-    int unstableC[4];
+    int unstableR[3];
+    int unstableC[3];
     int r,c;
     int uprightC[3]; // if an uprightSquare is involved in a match then keep track of it's column 
                   // to later rid all those cells in that column 
@@ -1125,7 +1131,7 @@ void Board::check3Row(int chain) {
             color1 = theBoard[i][j]->getColour();
             color2 = theBoard[i][j+1]->getColour();
             color3 = theBoard[i][j+2]->getColour();
-            if (color1 != 6 && color1 == color2 && color2 == color3 && color3 == color4) { //check for match
+            if (color1 != 6 && color1 == color2 && color2 == color3) { //check for match
                 // check if any of the squares in the match are a different type
                 for (int k=0; k < 3; k++) {
                     if (theBoard[i][j+k]->getType() == 'p') {
@@ -1180,7 +1186,7 @@ void Board::check3Row(int chain) {
                     for (int u1=0; u1 < numUpright; u1++) { // set the entire column to type '-'
                         int j4 = uprightC[u1];
                         for (int j3 = 0; j3 < 10; j3++) {
-							if(theBoard[j3][j4]->getColour != 6){
+							if(theBoard[j3][j4]->getColour() != 6){
 	                            theBoard[j3][j4]->setColour(6);
 								incre++;
         	                    theBoard[j3][j4]->setType('_');
@@ -1229,7 +1235,7 @@ void Board::check3Column(int chain) {
             color1 = theBoard[i][j]->getColour();
             color2 = theBoard[i+1][j]->getColour();
             color3 = theBoard[i+2][j]->getColour();
-            if (color1 != 6 && color1 == color2 && color2 == color3 && color3 == color4) { //check for match
+            if (color1 != 6 && color1 == color2 && color2 == color3) { //check for match
                 // check if any of the squares in the match are a different type
                 for (int k=0; k < 3; k++) {
                     if (theBoard[i+k][j]->getType() == 'p') {
@@ -1257,7 +1263,7 @@ void Board::check3Column(int chain) {
                 }
                 theBoard[i][j]->setColour(6); // set squares to '_' type
                 theBoard[i+1][j]->setColour(6);
-                theBoard[i+2][j]->setColour(6)); // set square to 'v' upright type
+                theBoard[i+2][j]->setColour(6); // set square to 'v' upright type
 				incre +=3;
                 if (psychedelic == true) {// if psychedelic square was involved in the match
                     // set all squares in the board of same color to '-' type
@@ -1330,7 +1336,7 @@ void Board::checkL1(int chain) { // check first L shape
             color3 = theBoard[i+2][j]->getColour();
             color4 = theBoard[i][j+1]->getColour();
             color5 = theBoard[i][j+2]->getColour();
-            if (color1 == color2 && color2 == color3 && color3 == color4 && color4 == color5) { //check for match
+            if (color1!=6 && color1 == color2 && color2 == color3 && color3 == color4 && color4 == color5) { //check for match
                 // check if any of the squares in the match are a different type
                 for (int i2=0; i2 < 3; i2++) {
                     if (theBoard[i+i2][j]->getType() == 'p') {
@@ -1346,11 +1352,11 @@ void Board::checkL1(int chain) { // check first L shape
                         theBoard[i+i2][j]->setType('_');
                     }
                     else if (theBoard[i+i2][j]->getType() == 'b') { // unstable square involved
-                        unstableR[numUnstable]=i;
-                        unstableC[numUnstable]=j+k;
+                        unstableR[numUnstable]=i+i2;
+                        unstableC[numUnstable]=j;
                         numUnstable++;
                         unstable = true;
-                        theBoard[i][j+k]->setType('_');
+                        theBoard[+i2][j]->setType('_');
                     }
                     else if (theBoard[i+i2][j]->getType() == 'h') {
                         lateral = true;
@@ -1373,10 +1379,10 @@ void Board::checkL1(int chain) { // check first L shape
                     }
                     else if (theBoard[i][j+j2]->getType() == 'b') {
                         unstableR[numUnstable]=i;
-                        unstableC[numUnstable]=j+k;
+                        unstableC[numUnstable]=j+j2;
                         numUnstable++;
                         unstable = true;
-                        theBoard[i][j+k]->setType('_');
+                        theBoard[i][j+j2]->setType('_');
                     }
                     else if (theBoard[i][j+j2]->getType() == 'h') {
                         if (lateral == false) {
@@ -1418,7 +1424,7 @@ void Board::checkL1(int chain) { // check first L shape
                 }
                 if (upright == true) {
 				for (int z=0; z<numUpright; z++) {
-					int col = uprightC[numUpright];
+					int col = uprightC[z];
                     for (int j3 = 0; j3 < 10; j3++) { // set the entire column to type '-'
 						if(theBoard[j3][col]->getColour() != 6){
 	                        theBoard[j3][col]->setColour(6);
@@ -1442,7 +1448,8 @@ void Board::checkL1(int chain) { // check first L shape
                     }
                 lateral = false;
                 }
-                theBoard[i][j]->setType('b');
+				theBoard[i][j]->setColour(color1);
+                theBoard[i][j]->setType('b');//are you sure this is cool?
             }
         }
     }
@@ -1472,7 +1479,7 @@ void Board::checkL2(int chain) { // check first L shape
             color3 = theBoard[i-2][j]->getColour();
             color4 = theBoard[i][j+1]->getColour();
             color5 = theBoard[i][j+2]->getColour();
-            if (color1 == color2 && color2 == color3 && color3 == color4 && color4 == color5) { //check for match
+            if (color1!=6 && color1 == color2 && color2 == color3 && color3 == color4 && color4 == color5) { //check for match
                 // check if any of the squares in the match are a different type
                 for (int i2=0; i2 < 3; i2++) {
                     if (theBoard[i-i2][j]->getType() == 'p') {
@@ -1488,11 +1495,11 @@ void Board::checkL2(int chain) { // check first L shape
                         theBoard[i+i2][j]->setType('_');
                     }
                     else if (theBoard[i-i2][j]->getType() == 'b') { // unstable square involved
-                        unstableR[numUnstable]=i;
-                        unstableC[numUnstable]=j+k;
+                        unstableR[numUnstable]=i-i2;
+                        unstableC[numUnstable]=j;
                         numUnstable++;
                         unstable = true;
-                        theBoard[i][j+k]->setType('_');
+                        theBoard[i-i2][j]->setType('_');
                     }
                     else if (theBoard[i-i2][j]->getType() == 'h') {
                         lateral = true;
@@ -1514,10 +1521,10 @@ void Board::checkL2(int chain) { // check first L shape
                     }
                     else if (theBoard[i][j+j2]->getType() == 'b') {
                         unstableR[numUnstable]=i;
-                        unstableC[numUnstable]=j+k;
+                        unstableC[numUnstable]=j+j2;
                         numUnstable++;
                         unstable = true;
-                        theBoard[i][j+k]->setType('_');
+                        theBoard[i][j+j2]->setType('_');
                     }
                     else if (theBoard[i][j+j2]->getType() == 'h') {
                         if (lateral == false) {
@@ -1558,7 +1565,7 @@ void Board::checkL2(int chain) { // check first L shape
                 }
                 if (upright == true) {
 					for (int x=0; x<numUpright; x++) {
-						int col = uprightC[numUpright];
+						int col = uprightC[x];
                     	for (int j3 = 0; j3 < 10; j3++) { // set the entire column to type '-'
 							if(theBoard[j3][col]->getColour()!=6){
 	                        	theBoard[j3][col]->setColour(6);
@@ -1583,6 +1590,7 @@ void Board::checkL2(int chain) { // check first L shape
                 	lateral = false;
                 }
                 theBoard[i][j]->setType('b');
+				theBoard[i][j]->setColour(color1);
             }
         }
     }
@@ -1613,7 +1621,7 @@ void Board::checkL3(int chain) { // check first L shape
             color3 = theBoard[i-2][j]->getColour();
             color4 = theBoard[i][j-1]->getColour();
             color5 = theBoard[i][j-2]->getColour();
-            if (color1 == color2 && color2 == color3 && color3 == color4 && color4 == color5) { //check for match
+            if (color1 != 6 && color1 == color2 && color2 == color3 && color3 == color4 && color4 == color5) { //check for match
                 // check if any of the squares in the match are a different type
                 for (int i2=0; i2 < 3; i2++) {
                     if (theBoard[i-i2][j]->getType() == 'p') {
@@ -1629,11 +1637,11 @@ void Board::checkL3(int chain) { // check first L shape
                         theBoard[i+i2][j]->setType('_');
                     }
                     else if (theBoard[i-i2][j]->getType() == 'b') { // unstable square involved
-                        unstableR[numUnstable]=i;
-                        unstableC[numUnstable]=j+k;
+                        unstableR[numUnstable]=i-i2;
+                        unstableC[numUnstable]=j;
                         numUnstable++;
                         unstable = true;
-                        theBoard[i][j+k]->setType('_');
+                        theBoard[i-i2][j]->setType('_');
                     }
                     else if (theBoard[i-i2][j]->getType() == 'h') {
                         lateral = true;
@@ -1655,10 +1663,10 @@ void Board::checkL3(int chain) { // check first L shape
                     }
                     else if (theBoard[i][j-j2]->getType() == 'b') {
                         unstableR[numUnstable]=i;
-                        unstableC[numUnstable]=j+k;
+                        unstableC[numUnstable]=j-j2;
                         numUnstable++;
                         unstable = true;
-                        theBoard[i][j+k]->setType('_');
+                        theBoard[i][j-j2]->setType('_');
                     }
                     else if (theBoard[i][j-j2]->getType() == 'h') {
                         if (lateral == false) {}
@@ -1699,7 +1707,7 @@ void Board::checkL3(int chain) { // check first L shape
                 }
                 if (upright == true) {
 				for (int x=0; x<numUpright; x++) {
-					int col = uprightC[numUpright];
+					int col = uprightC[x];
                     for (int j3 = 0; j3 < 10; j3++) { // set the entire column to type '-'
 						if(theBoard[j3][col]->getColour()!=6){
 	                        theBoard[j3][col]->setColour(6);
@@ -1723,6 +1731,7 @@ void Board::checkL3(int chain) { // check first L shape
                 lateral = false;
                 }
                 theBoard[i][j]->setType('b');
+				theBoard[i][j]->setColour(color1);
             }
         }
     }
@@ -1752,7 +1761,7 @@ void Board::checkL4(int chain) { // check first L shape
             color3 = theBoard[i+2][j]->getColour();
             color4 = theBoard[i][j-1]->getColour();
             color5 = theBoard[i][j-2]->getColour();
-            if (color1 == color2 && color2 == color3 && color3 == color4 && color4 == color5) { //check for match
+            if (color1 != 6 && color1 == color2 && color2 == color3 && color3 == color4 && color4 == color5) { //check for match
                 // check if any of the squares in the match are a different type
                 for (int i2=0; i2 < 3; i2++) {
                     if (theBoard[i+i2][j]->getType() == 'p') {
@@ -1768,11 +1777,11 @@ void Board::checkL4(int chain) { // check first L shape
                         theBoard[i+i2][j]->setType('_');
                     }
                     else if (theBoard[i+i2][j]->getType() == 'b') { // unstable square involved
-                        unstableR[numUnstable]=i;
-                        unstableC[numUnstable]=j+k;
+                        unstableR[numUnstable]=i+i2;
+                        unstableC[numUnstable]=j;
                         numUnstable++;
                         unstable = true;
-                        theBoard[i][j+k]->setType('_');
+                        theBoard[i+i2][j]->setType('_');
                     }
                     else if (theBoard[i+i2][j]->getType() == 'h') {
                         lateral = true;
@@ -1794,10 +1803,10 @@ void Board::checkL4(int chain) { // check first L shape
                     }
                     else if (theBoard[i][j-j2]->getType() == 'b') {
                         unstableR[numUnstable]=i;
-                        unstableC[numUnstable]=j+k;
+                        unstableC[numUnstable]=j-j2;
                         numUnstable++;
                         unstable = true;
-                        theBoard[i][j+k]->setType('_');
+                        theBoard[i][j-j2]->setType('_');
                     }
                     else if (theBoard[i][j-j2]->getType() == 'h') {
                         if (lateral==false) {
@@ -1838,7 +1847,7 @@ void Board::checkL4(int chain) { // check first L shape
                 }
                 if (upright == true) {
 					for (int y=0; y<numUpright; y++) {
-						int col = uprightC[numUpright];
+						int col = uprightC[y];
                     	for (int j3 = 0; j3 < 10; j3++) { // set the entire column to type '-'
 							if(theBoard[j3][col]->getColour() != 6){
 	                        	theBoard[j3][col]->setColour(6);
@@ -1862,13 +1871,30 @@ void Board::checkL4(int chain) { // check first L shape
                     }
                 	lateral = false;
                 }
+				theBoard[i][j]->setColour(color1);
                 theBoard[i][j]->setType('b');
             }
         }
     }
 	incrScore(incre,chain);
 }
+
+void Board::resolveMatches() {
+	while (checkMatch()) {
+		check5Row();
+		check5Column();
+		check4Row();
+		check4Column();
+		checkL1();
+		checkL2();
+		checkL3();
+		checkL4();
+		check3Row();
+		check3Column();
+		updateBoard();
+	}
 }
+
 
 Board::~Board(){
 	clearBoard();
@@ -1897,7 +1923,8 @@ int main(){
 //  delete b;
    // return 0;
     b.hint();
-    b.swap(0,0,'e');
+cout<<"hint"<<endl;
+    //b.swap(0,0,'e');
     cout << b << endl;
     cout << "checkMatch on b is " << b.checkMatch() <<endl;   
 
@@ -1905,10 +1932,13 @@ int main(){
     cout << "swapped square at row 3, column 0 south." << endl;
     cout << b << endl;
 
-    cout << "Next board is after check4Row() and check5Column is called" <<endl;
+    cout << "Next board is after check4Row() and check4Column is called" <<endl;
 
-    b.check4Row();
-    //b.check5Column();
+    b.checkL2();i
+cout <<"l3 is fine " << endl;
+cout<<b<<endl;
+    b.checkL1();
+cout<<"l4 is fine"<<endl;
     cout << b << endl;
 
 	cout <<"We will now updateBoard() : " <<endl;
@@ -1917,4 +1947,5 @@ int main(){
 	cout << b.getScore() << endl;
 	cout << "leftover is " << b.getLeftover() <<endl;
 }
+
 
